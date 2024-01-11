@@ -37,7 +37,7 @@ local function bookmark(opts)
          separator = "▏",
          items = {
             { width = 5 },
-            { width = 30 },
+            { width = 100 },
             { remaining = true },
          },
       }
@@ -45,7 +45,7 @@ local function bookmark(opts)
       return displayer {
          line_info,
          entry.text:gsub(".* | ", ""),
-         utils.path_smart(entry.filename), -- or path_tail
+         utils.path_tail(entry.filename), -- or path_tail
       }
    end
    pickers.new(opts, {
