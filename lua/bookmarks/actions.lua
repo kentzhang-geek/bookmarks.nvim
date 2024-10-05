@@ -16,35 +16,41 @@ M.detach = function(bufnr, keep_signs)
    end
 end
 
+local function updateBookmarks_fpath(filepath, lnum, mark, ann)
+    if filepath == nil then
+        return
+    end
+    local data = config.cache["data"]
+    local marks = data[filepath]
+    local isIns = false
+    if lnum == -1 then
+        marks = nil
+        isIns = true
+        -- check buffer auto_save to file
+    end
+    for k, _ in pairs(marks or {}) do
+        if k == tostring(lnum) then
+            isIns = true
+            if mark == "" then
+                marks[k] = nil
+            end
+            break
+        end
+    end
+    if isIns == false or ann then
+        marks = marks or {}
+        marks[tostring(lnum)] = ann and { m = mark, a = ann } or { m = mark }
+    end
+    M.saveBookmarks()  -- always save to file
+    data[filepath] = marks
+end
+
 local function updateBookmarks(bufnr, lnum, mark, ann)
    local filepath = uv.fs_realpath(api.nvim_buf_get_name(bufnr))
    if filepath == nil then
       return
    end
-   local data = config.cache["data"]
-   local marks = data[filepath]
-   local isIns = false
-   if lnum == -1 then
-      marks = nil
-      isIns = true
-      -- check buffer auto_save to file
-   end
-   for k, _ in pairs(marks or {}) do
-      if k == tostring(lnum) then
-         isIns = true
-         if mark == "" then
-            marks[k] = nil
-         end
-         break
-      end
-   end
-   if isIns == false or ann then
-      marks = marks or {}
-      marks[tostring(lnum)] = ann and { m = mark, a = ann } or { m = mark }
-      -- check buffer auto_save to file
-      -- M.saveBookmarks()
-   end
-   data[filepath] = marks
+   updateBookmarks_fpath(filepath, lnum, mark, ann)
 end
 
 M.toggle_signs = function(value)
@@ -106,6 +112,14 @@ M.bookmark_ann = function()
       signs:add(bufnr, signlines)
       updateBookmarks(bufnr, lnum, line, answer)
    end)
+end
+
+M.bookmark_del = function(filename, lnum)
+    local current_file = uv.fs_realpath(api.nvim_buf_get_name(current_buf()))
+    if (filename == current_file) then 
+        signs:remove(filename, lnum)
+    end
+    updateBookmarks_fpath(filename, lnum, "")
 end
 
 local jump_line = function(prev)
