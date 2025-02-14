@@ -80,6 +80,12 @@ M.bookmark_toggle = function()
    end
 end
 
+M.bookmark_reload = function()
+    M.loadBookmarks()
+    M.setup()
+    M.refresh()
+end
+
 M.bookmark_clean = function()
    local bufnr = current_buf()
    signs:remove(bufnr)

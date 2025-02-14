@@ -99,4 +99,8 @@ local function bookmark(opts)
     }):find()
 end
 
-return telescope.register_extension { exports = { list = bookmark, actions = bm_actions } }
+local function bm_reload()
+    bm.bookmark_reload()
+end
+
+return telescope.register_extension { exports = { list = bookmark, actions = bm_actions, reload = bm_reload } }
