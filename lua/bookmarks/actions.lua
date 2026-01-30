@@ -111,7 +111,17 @@ M.bookmark_ann = function()
       if answer == nil then return end
       local line = api.nvim_buf_get_lines(bufnr, lnum - 1, lnum, false)[1]
       signs:remove(bufnr, lnum)
-      local text = config.keywords[string.sub(answer or "", 1, 2)]
+      local text = nil
+      local ann = answer or ""
+      if string.sub(ann, 1, 1) == "@" then
+          text = config.keywords[string.sub(ann, 1, 2)]
+      else
+          local first_char = vim.fn.strcharpart(ann, 0, 1)
+          if first_char ~= "" and first_char ~= " " then
+              text = first_char
+          end
+      end
+      
       if text then
          signlines[1]["text"] = text
       end
@@ -197,8 +207,18 @@ M.refresh = function(bufnr)
             type = v.a and "ann" or "add",
             lnum = tonumber(k),
          }
-         local pref = string.sub(v.a or "", 1, 2)
-         local text = config.keywords[pref]
+         local ann = v.a or ""
+         local text = nil
+         if string.sub(ann, 1, 1) == "@" then
+             local pref = string.sub(ann, 1, 2)
+             text = config.keywords[pref]
+         else
+             local first_char = vim.fn.strcharpart(ann, 0, 1)
+             if first_char ~= "" and first_char ~= " " then
+                 text = first_char
+             end
+         end
+
          if text then
             ma["text"] = text
          end
