@@ -15,8 +15,16 @@ local action_state = require('telescope.actions.state')
 local transform_mod = require('telescope.actions.mt').transform_mod
 
 local function get_text(annotation)
-   local pref = string.sub(annotation, 1, 2)
-   local ret = config.keywords[pref]
+   local ret = nil
+   if string.sub(annotation, 1, 1) == "@" then
+       local pref = string.sub(annotation, 1, 2)
+       ret = config.keywords[pref]
+   else
+       local first_char = vim.fn.strcharpart(annotation, 0, 1)
+       if first_char ~= "" and first_char ~= " " then
+           ret = first_char
+       end
+   end
    if ret == nil then
       ret = config.signs.ann.text .. " "
    end

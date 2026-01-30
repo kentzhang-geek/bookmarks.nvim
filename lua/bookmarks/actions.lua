@@ -41,8 +41,8 @@ local function updateBookmarks_fpath(filepath, lnum, mark, ann)
         marks = marks or {}
         marks[tostring(lnum)] = ann and { m = mark, a = ann } or { m = mark }
     end
-    M.saveBookmarks()  -- always save to file
     data[filepath] = marks
+    M.saveBookmarks()  -- always save to file
 end
 
 local function updateBookmarks(bufnr, lnum, mark, ann)
@@ -131,9 +131,16 @@ M.bookmark_ann = function()
 end
 
 M.bookmark_del = function(filename, lnum)
-    local current_file = uv.fs_realpath(api.nvim_buf_get_name(current_buf()))
-    if (filename == current_file) then 
-        signs:remove(filename, lnum)
+    local buf_list = api.nvim_list_bufs()
+    for _, buf in ipairs(buf_list) do
+        if api.nvim_buf_is_loaded(buf) then
+            local buf_name = api.nvim_buf_get_name(buf)
+            local buf_path = uv.fs_realpath(buf_name)
+            if buf_path == filename or buf_name == filename then
+                signs:remove(buf, lnum)
+                break
+            end
+        end
     end
     updateBookmarks_fpath(filename, lnum, "")
 end
